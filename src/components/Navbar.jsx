@@ -1,4 +1,4 @@
-import { faHome, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AdbIcon from '@mui/icons-material/Adb';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -105,7 +105,7 @@ function Navbar() {
                     
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <FontAwesomeIcon icon={faUser} className="text-gray-200 w-6 h-6" />
+                                <FontAwesomeIcon icon={faRightFromBracket} className="text-gray-200 w-6 h-6" />
                             </IconButton>
                         </Tooltip>
 

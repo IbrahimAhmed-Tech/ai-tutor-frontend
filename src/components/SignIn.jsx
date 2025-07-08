@@ -18,17 +18,14 @@ export default function SignIn() {
         e.preventDefault();
         setSigningIn(true);
 
-        const formData = new FormData(e.target);
-        
-        
 
         try {
             const response = await loginUser(email, password);
             const { token, user } = response.data;
-
+        
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
-
+            console.log("user",user)
             toast.success("Login successful");
             navigate("/home");
         } catch (err) {
@@ -76,15 +73,15 @@ export default function SignIn() {
                                     />
                                 </svg>
                             </div>
-                            <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                            <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent font-roboto">
                                 AI Tutor
                             </h1>
-                            <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                            <p className="text-lg text-gray-300 mb-4 leading-relaxed font-poppins">
                                 Transform your learning experience with personalized AI-powered education
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 text-left max-w-md mx-auto">
+                        <div className="grid grid-cols-1 gap-6 text-left max-w-md mx-auto mb-2">
                             {[
                                 { title: "Adaptive Learning", desc: "Personalized curriculum that adapts to your pace" },
                                 { title: "24/7 AI Assistant", desc: "Get instant help whenever you need it" },
@@ -102,19 +99,19 @@ export default function SignIn() {
                     </div>
                 </div>
 
-                {/* Animated floating elements */}
+                
                 <div className="absolute top-20 left-20 w-4 h-4 bg-white/20 rounded-full animate-pulse"></div>
                 <div className="absolute top-40 right-32 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>
                 <div className="absolute bottom-32 left-32 w-3 h-3 bg-white/25 rounded-full animate-bounce"></div>
                 <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent"></div>
             </div>
 
-            {/* Right side - Sign In Form */}
+            
             <div className="w-full lg:w-[40%] flex items-center justify-center  px-8">
 
                 <div className="max-w-md w-full space-y-8">
 
-                    {/* Logo for mobile */}
+                    
                     <div className="lg:hidden text-center">
                         <div className="w-16 h-16 mx-auto mb-4 bg-gray-900 rounded-full flex items-center justify-center">
                             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

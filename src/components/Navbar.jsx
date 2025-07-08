@@ -12,7 +12,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Navbar() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -23,14 +23,20 @@ function Navbar() {
     const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
     const handleCloseNavMenu = () => setAnchorElNav(null);
     const handleCloseUserMenu = () => setAnchorElUser(null);
-
+    const navigate = useNavigate();
     const pages = [
         { name: <FontAwesomeIcon icon={faHome} className='w-6 h-6'/>, route: '/home'},
         { name: 'View Demo', route: '/demo' },
-        
     ];
 
      const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+
+    const handleLogout = () => {
+        localStorage.removeItem('token'); 
+        localStorage.removeItem('user'); 
+        
+        navigate('/');
+      };
     return (
         <AppBar position="static" className="!bg-gray-800">
             <Container maxWidth="xl">
@@ -103,8 +109,8 @@ function Navbar() {
                     <Box sx={{ flexGrow: 0 }} className="flex items-center gap-4">
 
                     
-                        <Tooltip title="Open settings">
-                            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                        <Tooltip title="Logout">
+                            <IconButton onClick={handleLogout} sx={{ p: 0 }}>
                                 <FontAwesomeIcon icon={faRightFromBracket} className="text-gray-200 w-6 h-6" />
                             </IconButton>
                         </Tooltip>

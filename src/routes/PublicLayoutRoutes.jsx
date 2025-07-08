@@ -1,8 +1,9 @@
+
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
-import axios from 'axios';
 import Layout from "./Layout";
+import { validateToken } from "../services/api"; 
 
 const PublicLayoutRoutes = () => {
     const navigate = useNavigate();
@@ -11,23 +12,19 @@ const PublicLayoutRoutes = () => {
         const token = localStorage.getItem("token");
 
         const checkToken = async () => {
-            console.log("Checking token in public.", token);
+            
             if (!token) {
                 return;
             }
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/auth/validate-token`, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                });
+                const response = await validateToken(token); 
 
                 if (response.status !== 200) {
                     navigate("/");
                 }
             } catch (err) {
                 console.log(err?.message);
+                navigate("/"); 
             }
         };
 
@@ -35,13 +32,10 @@ const PublicLayoutRoutes = () => {
     }, [navigate]);
 
     return (
-        <>
-            <Layout>
-                <Outlet />
-            </Layout>
-        </>
+        <Layout>
+            <Outlet />
+        </Layout>
     );
 };
-
 
 export default PublicLayoutRoutes;

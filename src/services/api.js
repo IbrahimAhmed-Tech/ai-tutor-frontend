@@ -26,11 +26,15 @@ export const validateToken = (token) => {
     });
 };
 
-export const transcribeAudio = (audioBlob) => {
+export const transcribeAudio = (audioBlob,userId ,userContext) => {
+    console.log("Transcribing audio for user context:", userContext);
+    console.log("userId.............",userId)
     const formData = new FormData();
     formData.append("audio", audioBlob, "audio.webm");
+    formData.append("userId", userId);
+    formData.append("userContext", userContext);
 
-    return API.post("/api/transcribe", formData, {
+    return API.post("/api/ai-conversation", formData, {
         headers: {
             "Content-Type": "multipart/form-data",
         },

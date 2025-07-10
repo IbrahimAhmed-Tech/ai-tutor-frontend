@@ -3,7 +3,7 @@ import Home from '../components/Home'
 
 const HomePage = () => {
   return (
-    <div>
+    <div className='h-screen overflow-hidden'>
       <Home/>
     </div>
   )

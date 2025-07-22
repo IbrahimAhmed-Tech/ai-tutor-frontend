@@ -27,8 +27,7 @@ export const validateToken = (token) => {
 };
 
 export const transcribeAudio = (audioBlob,userId ,userContext) => {
-    console.log("Transcribing audio for user context:", userContext);
-    console.log("userId.............",userId)
+  
     const formData = new FormData();
     formData.append("audio", audioBlob, "audio.webm");
     formData.append("userId", userId);

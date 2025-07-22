@@ -49,7 +49,7 @@ export function useVoiceRecorder(onStop) {
 
             if (avg < silenceThreshold) {
                 if (!silenceTimerRef.current) {
-                    silenceTimerRef.current = setTimeout(() => stopRecording(), 3000); // ← 3 seconds
+                    silenceTimerRef.current = setTimeout(() => stopRecording(), 3000); 
                 }
             } else {
                 clearTimeout(silenceTimerRef.current);

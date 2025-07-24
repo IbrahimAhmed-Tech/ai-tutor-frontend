@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import { loginUser } from "../services/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import showToast from "../utils/showToast"
+import logError from "../utils/logError"
+
 
 export default function SignIn() {
     const navigate = useNavigate();
@@ -25,15 +27,10 @@ export default function SignIn() {
         
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
-            toast.success("Login successful");
+            showToast("success", "Login successful")          
             navigate("/home");
         } catch (err) {
-            if (err.response?.status === 401) {
-                toast.error("Invalid email or password");
-            } else {
-                const message = err.response?.data?.error || "Something went wrong. Please try again.";
-                toast.error(message);
-            }
+            logError(err);
         } finally {
             setSigningIn(false);
         }

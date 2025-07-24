@@ -7,8 +7,8 @@ import MyRouter from './routes/MyRouter';
 function App() {
   return (
     <>
-      <MyRouter />
-      <Toaster />
+      <MyRouter/>
+      <Toaster position="top-right" reverseOrder={false} />
     </>
   );
 }

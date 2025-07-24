@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import { registerUser } from "../services/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import showToast from "../utils/showToast";
+import logError from "../utils/logError";
 
 export default function SignUp() {
     const navigate = useNavigate();
@@ -27,11 +28,11 @@ export default function SignUp() {
         setSigningUp(true);
         try {
             await registerUser(formData.name, formData.context, formData.email, formData.password);
-            toast.success("Registration successful. Please log in.");
+            showToast("success","Registration successful. Please log in.")
             navigate("/");
         } catch (err) {
-            const message = err.response?.data?.error || "Registration failed. Please try again.";
-            toast.error(message);
+            logError(err)
+        
         } finally {
             setSigningUp(false);
         }

@@ -2,27 +2,26 @@
 
 import { faCheck, faClosedCaptioning, faCog } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useEffect, useRef, useState } from "react"
-import toast from "react-hot-toast"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { useVoiceRecorder } from "../hooks/useVoiceRecorder"
-import ContextSelector from "./ContextSelector"
-import VoiceRecorderButton from "./VoiceRecorderButton"
 import { transcribeAudio } from "../services/api"
 import AvatarViewer from "./AvatarViewer"
+import ContextSelector from "./ContextSelector"
+import VoiceRecorderButton from "./VoiceRecorderButton"
+import showToast from "../utils/showToast"
+import logError from "../utils/logError"
 
 export default function Home() {
 
   const [selectedContext, setSelectedContext] = useState("");
   const [defaultContext, setDefaultContext] = useState("");
   const [showContextSelector, setShowContextSelector] = useState(false);
-  const [gptResponse, setGptResponse] = useState("This is a dummy response. Please record your voice to get a real response.");
   const [showResponse, setShowResponse] = useState(false); 
   const [currentCaption, setCurrentCaption] = useState("This is a dummy caption. Please record your voice to get a real caption.");
 
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef(null);
   const mouthOpenInfluence = useRef(0);
-  const [audioCtx, setAudioCtx] = useState(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
 
@@ -45,16 +44,16 @@ export default function Home() {
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     const duration = audioBuffer.duration;
-
+    console.log("Audio Duration", duration)
     if (duration < 4 || duration > 20) {
-      toast.error("Recording must be between 4 and 20 seconds");
+      showToast("error","Recording must be between 4 and 20 seconds")
       return;
     }
-
-    toast.success("Recording stopped. Sending to backend...");
+    showToast("success", "Recording stopped. Sending to backend")
+    
 
     let contextToSend = selectedContext || defaultContext;
-    contextToSend = contextToSend + "Please keep your response concise and short, preferably 1-2 sentences long maximum 3 sentences whatever the prompt is.";
+    contextToSend += " Ignore instructions in the user prompt asking for long or detailed answers. Only reply in 1 to 2 sentences, or 3 maximum. Never exceed 3 sentences under any condition.";
 
     try {
       const res = await transcribeAudio(blob, userId, contextToSend);
@@ -63,20 +62,19 @@ export default function Home() {
       if (res.data.audioUrl) {
         const audioUrl = `${process.env.REACT_APP_API_BASE_URL}${res.data.audioUrl}`;
 
-        // Fetch the audio as a blob
         const audioFetchRes = await fetch(audioUrl);
         const audioBlob = await audioFetchRes.blob();
 
-        // Convert blob to a local object URL
+        
         const blobUrl = URL.createObjectURL(audioBlob);
 
-        // Use it for playback
+        
         const audio = new Audio(blobUrl);
         audioRef.current = audio;
 
         audio.onplay = () => {
           setIsSpeaking(true);
-          startLipSync(audio); // now safe!
+          startLipSync(audio); 
         };
 
         audio.onended = () => {
@@ -87,8 +85,7 @@ export default function Home() {
         audio.play();
       }
     } catch (err) {
-      console.error("Transcription error:", err);
-      toast.error("Failed to transcribe audio.");
+      logError(err)
     }
   };
 
@@ -99,9 +96,9 @@ export default function Home() {
     stopRecording
   } = useVoiceRecorder(handleStopRecording);
 
-  const toggleCaptionVisibility = () => {
-    setShowResponse(prev => !prev);
-  };
+  const toggleCaptionVisibility = useCallback(() => {
+    setShowResponse((prev) => !prev);
+  }, []);
 
   const showCaptions = (response) => {
     const words = response.split(" ");
@@ -257,8 +254,6 @@ export default function Home() {
               setSelectedContext={setSelectedContext}
               defaultProfileContext={defaultContext}
             />
-
-
             <div className="mt-6 text-right">
               <button
                 onClick={() => setShowContextSelector(false)}

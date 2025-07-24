@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 
 import Layout from "./Layout";
 import { validateToken } from "../services/api"; 
+import logError from "../utils/logError";
 
 const PublicLayoutRoutes = () => {
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ const PublicLayoutRoutes = () => {
                     navigate("/");
                 }
             } catch (err) {
-                console.log(err?.message);
+                logError(err)
                 navigate("/"); 
             }
         };

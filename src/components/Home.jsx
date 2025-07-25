@@ -60,8 +60,8 @@ export default function Home() {
       showCaptions(res.data.response);
       console.log("response received from backend.", res.data.response);
       if (res.data.audioUrl) {
-        const audioUrl = `${process.env.REACT_APP_API_BASE_URL}${res.data.audioUrl}`;
-
+        const audioUrl = res.data.audioUrl;
+        console.log("audioURL",audioUrl)
         const audioFetchRes = await fetch(audioUrl);
         const audioBlob = await audioFetchRes.blob();
 

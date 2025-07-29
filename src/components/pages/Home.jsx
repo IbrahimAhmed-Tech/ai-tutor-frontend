@@ -3,27 +3,30 @@
 import { faCheck, faClosedCaptioning, faCog } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState, useCallback } from "react"
-import { useVoiceRecorder } from "../hooks/useVoiceRecorder"
-import { transcribeAudio } from "../services/api"
-import AvatarViewer from "./AvatarViewer"
-import ContextSelector from "./ContextSelector"
-import VoiceRecorderButton from "./VoiceRecorderButton"
-import showToast from "../utils/showToast"
-import logError from "../utils/logError"
+import { useVoiceRecorder } from "../../hooks/useVoiceRecorder"
+import { transcribeAudio } from "../../services/api"
+import AvatarViewer from "../ui/AvatarViewer"
+import ContextSelector from "../ui/ContextSelector"
+import VoiceRecorderButton from "../ui/VoiceRecorderButton"
+import showToast from "../../utils/showToast"
+import logError from "../../utils/logError"
+import Loader from "../ui/Loader"
 
 export default function Home() {
 
   const [selectedContext, setSelectedContext] = useState("");
   const [defaultContext, setDefaultContext] = useState("");
   const [showContextSelector, setShowContextSelector] = useState(false);
-  const [showResponse, setShowResponse] = useState(false); 
+  const [showResponse, setShowResponse] = useState(false);
   const [currentCaption, setCurrentCaption] = useState("This is a dummy caption. Please record your voice to get a real caption.");
-
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef(null);
   const mouthOpenInfluence = useRef(0);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+
 
   const user = localStorage.getItem("user");
   const userId = user ? JSON.parse(user).id : null;
@@ -44,37 +47,35 @@ export default function Home() {
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     const duration = audioBuffer.duration;
-    console.log("Audio Duration", duration)
     if (duration < 4 || duration > 20) {
-      showToast("error","Recording must be between 4 and 20 seconds")
+      showToast('error', 'Error!', 'Recording must be between 4 and 20 seconds.');
       return;
     }
-    showToast("success", "Recording stopped. Sending to backend")
-    
-
     let contextToSend = selectedContext || defaultContext;
     contextToSend += " Ignore instructions in the user prompt asking for long or detailed answers. Only reply in 1 to 2 sentences, or 3 maximum. Never exceed 3 sentences under any condition.";
 
     try {
+      setIsLoading(true);
+
       const res = await transcribeAudio(blob, userId, contextToSend);
       showCaptions(res.data.response);
       console.log("response received from backend.", res.data.response);
       if (res.data.audioUrl) {
         const audioUrl = res.data.audioUrl;
-        console.log("audioURL",audioUrl)
+        console.log("audioURL", audioUrl)
         const audioFetchRes = await fetch(audioUrl);
         const audioBlob = await audioFetchRes.blob();
 
-        
+
         const blobUrl = URL.createObjectURL(audioBlob);
 
-        
+
         const audio = new Audio(blobUrl);
         audioRef.current = audio;
 
         audio.onplay = () => {
           setIsSpeaking(true);
-          startLipSync(audio); 
+          startLipSync(audio);
         };
 
         audio.onended = () => {
@@ -86,8 +87,13 @@ export default function Home() {
       }
     } catch (err) {
       logError(err)
+
+    }
+    finally {
+      setIsLoading(false); // ✅ Stop loading
     }
   };
+  console.log("isLoading:", isLoading);
 
   const {
     isRecording,
@@ -116,10 +122,10 @@ export default function Home() {
       } else {
         clearInterval(interval);
         setTimeout(() => {
-          setCurrentCaption("");  
-        }, 1000); 
+          setCurrentCaption("");
+        }, 1000);
       }
-    }, 4000); 
+    }, 4000);
   };
 
   useEffect(() => {
@@ -133,9 +139,9 @@ export default function Home() {
       }
 
       if (e.key === "Escape") {
-        setShowContextSelector(false); 
+        setShowContextSelector(false);
       }
-    
+
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -161,7 +167,7 @@ export default function Home() {
         requestAnimationFrame(animate);
         analyser.getByteFrequencyData(dataArray);
         const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
-        mouthOpenInfluence.current = Math.min(avg / 100, 1); // cap between 0 and 1
+        mouthOpenInfluence.current = Math.min(avg / 100, 1);
       } else {
         mouthOpenInfluence.current = 0;
       }
@@ -175,11 +181,11 @@ export default function Home() {
     <div className="w-full h-screen overflow-hidden flex px-5 py-1 items-start text-center bg-gradient-to-br from-gray-800 to-gray-950 shadow-2xl">
       <div
         className={`w-full px-5 flex flex-col items-center justify-center transition-all duration-300 rounded-3xl py-4 ${isRecording || isSpeaking
-            ? 'bg-gradient-to-br from-gray-700 to-gray-800 shadow-xl border border-gray-400'
-            : 'bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl border border-gray-700'
+          ? 'bg-gradient-to-br from-gray-700 to-gray-800 shadow-xl border border-gray-400'
+          : 'bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl border border-gray-700'
           }`}
-      >      
-        <div className="w-2/3 h-80 mb-2 rounded-2xl shadow-lg border border-gray-300">         
+      >
+        <div className="w-2/3 h-80 mb-2 rounded-2xl shadow-lg border border-gray-300">
           <AvatarViewer mouthOpenInfluence={mouthOpenInfluence} isSpeaking={isSpeaking} />
         </div>
         <div
@@ -196,17 +202,32 @@ export default function Home() {
           </div>
         </div>
 
-  
-        
 
-       
-        <div className="m4">
+
+        {isLoading && (
+          <div>
+            <div style={{
+              width: '200px',
+              height: '30px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Loader />
+            </div>
+
+
+          </div>
+        )}
+
+        <div className="mt-4">
+
           <p className="text-sm text-gray-400 m-2 font-poppins">
             {isRecording ? (
               <>
-                Recording time: 
+                Recording time:
                 <span className="ml-1 font-medium text-gray-400 font-poppins">{Math.floor(recordingTime / 60)}:
-                 {(recordingTime % 60).toString().padStart(2, "0")}
+                  {(recordingTime % 60).toString().padStart(2, "0")}
                 </span>
               </>
             ) : (
@@ -217,11 +238,11 @@ export default function Home() {
             )}
           </p>
           <div className="flex items-center justify-center space-x-4 mt-4">
-          <VoiceRecorderButton
-            isRecording={isRecording}
-            startRecording={startRecording}
-            stopRecording={stopRecording}
-          />
+            <VoiceRecorderButton
+              isRecording={isRecording}
+              startRecording={startRecording}
+              stopRecording={stopRecording}
+            />
             <button
               onClick={() => setShowContextSelector(true)}
               className="bg-gray-700 w-12 h-12 rounded-full flex items-center justify-center transition transform hover:scale-105"
@@ -230,22 +251,22 @@ export default function Home() {
               <FontAwesomeIcon icon={faCog} className="text-white text-xl" />
             </button>
             <button
-              onClick = {toggleCaptionVisibility}
+              onClick={toggleCaptionVisibility}
               className={`w-12 h-12 rounded-full flex items-center justify-center transition transform hover:scale-105 ${showResponse ? "bg-gray-900" : "bg-gray-700"
-                }`} 
+                }`}
               title={showResponse ? "Turn Off Captions" : "Turn On Captions"}
             >
               <FontAwesomeIcon icon={faClosedCaptioning} className="text-white text-xl" />
             </button>
           </div>
-         
+
         </div>
 
       </div>
 
 
-        
-      
+
+
       {showContextSelector && (
         <div className="fixed inset-0 z-40 bg-black bg-opacity-30 flex justify-center items-center">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative">

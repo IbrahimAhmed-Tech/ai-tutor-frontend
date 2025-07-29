@@ -1,6 +1,6 @@
 "use client";
 
-import demoVideo from "../assets/samplevideo.mp4";
+import demoVideo from "../../assets/samplevideo.mp4";
 
 export default function Demo() {
 

@@ -1,8 +1,8 @@
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import officeBg from '../assets/bgOffice.png';
-import { AvatarModel } from "./AvatarModel"; // Make sure to use updated version above
+import officeBg from '../../assets/bgOffice.png';
+import { AvatarModel } from "./AvatarModel"; 
 
 export default function AvatarViewer({ mouthOpenInfluence }) {
   return (

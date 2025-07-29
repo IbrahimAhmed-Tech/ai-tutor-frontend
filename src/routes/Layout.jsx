@@ -1,5 +1,5 @@
 import React from "react";
-import ResponsiveAppBar from "../components/Navbar";
+import ResponsiveAppBar from "../components/ui/Navbar";
 const Layout = ({ children }) => {
     return (
         <>

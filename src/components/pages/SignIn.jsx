@@ -6,6 +6,7 @@ import { faEye, faEyeSlash, faRightToBracket } from "@fortawesome/free-solid-svg
 import { Link } from "react-router-dom";
 import showToast from "../../utils/showToast"
 import logError from "../../utils/logError"
+import ReusableButton from "../ui/Button";
 
 
 export default function SignIn() {
@@ -36,12 +37,12 @@ export default function SignIn() {
         }
     };
 
-   
-    return (
-        <div className="min-h-screen bg-white flex">
 
-            {/* Left side - Hero Image */}
-            <div className="hidden lg:flex lg:w-[60%] bg-gray-900 relative overflow-hidden  h-screen justify-center items-center">
+    return (
+        <div className="min-h-screen bg-white flex ">
+
+            
+            <div className="hidden lg:flex lg:w-[60%] bg-gray-900 relative overflow-hidden  h-screen justify-center items-center p-2">
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black"></div>
 
                 {/* Large AI Brain Illustration */}
@@ -69,7 +70,7 @@ export default function SignIn() {
                                     />
                                 </svg>
                             </div>
-                            <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent font-roboto">
+                            <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent font-robotoCondensed">
                                 AI Tutor
                             </h1>
                             <p className="text-lg text-gray-300 mb-4 leading-relaxed font-poppins">
@@ -86,8 +87,8 @@ export default function SignIn() {
                                 <div key={index} className="flex items-center space-x-4 bg-white/5 backdrop-blur-sm rounded-lg p-4">
                                     <div className="w-3 h-3 bg-white rounded-full flex-shrink-0"></div>
                                     <div>
-                                        <h3 className="text-white font-semibold">{feature.title}</h3>
-                                        <p className="text-gray-400 text-sm">{feature.desc}</p>
+                                        <h3 className="text-white font-semibold font-robotoCondensed">{feature.title}</h3>
+                                        <p className="text-gray-400 text-sm font-poppins">{feature.desc}</p>
                                     </div>
                                 </div>
                             ))}
@@ -100,7 +101,7 @@ export default function SignIn() {
                 <div className="absolute top-40 right-32 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>
                 <div className="absolute bottom-32 left-32 w-3 h-3 bg-white/25 rounded-full animate-bounce"></div>
                 <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent"></div>
-            </div>
+            </div> 
 
 
             <div className="w-full lg:w-[40%] flex items-center justify-center  px-8">
@@ -119,12 +120,12 @@ export default function SignIn() {
                                 />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900">AI Tutor</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 font-robotoCondensed">AI Tutor</h2>
                     </div>
 
                     <div >
-                        <h2 className="text-3xl font-bold text-gray-900 text-center lg:text-left">Welcome back</h2>
-                        <p className="mt-2 text-sm text-gray-600 text-center lg:text-left">
+                        <h2 className="text-3xl font-bold text-gray-900 text-center lg:text-left font-robotoCondensed">Welcome back</h2>
+                        <p className="mt-2 text-sm text-gray-600 text-center lg:text-left font-poppins">
                             Sign in to continue your learning journey
                         </p>
                     </div>
@@ -132,7 +133,7 @@ export default function SignIn() {
                     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                         <div className="space-y-4">
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 font-poppins">
                                     Email address
                                 </label>
                                 <input
@@ -148,7 +149,7 @@ export default function SignIn() {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 font-poppins">
                                     Password
                                 </label>
                                 <div className="relative">
@@ -181,22 +182,22 @@ export default function SignIn() {
 
 
                         <div>
-                            <button
+                            <ReusableButton
                                 type="submit"
-                                className="group relative w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 transform hover:scale-[1.02]"
-                            >
-                                <FontAwesomeIcon icon={faRightToBracket} />
-                                {signingIn ? "Signing In..." : "Sign In"}
-                            </button>
+                                text="Sign In"
+                                icon={faRightToBracket}
+                                loading={signingIn}
+                                onClick={handleSubmit}
+                            />
                         </div>
 
 
 
 
                         <div className="text-center">
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-gray-600 font-poppins">
                                 {"Don't have an account? "}
-                                <Link to="/signup" className="font-medium text-gray-900 hover:text-gray-700 transition-colors duration-200">
+                                <Link to="/signup" className="font-medium font-poppins text-gray-900 hover:text-gray-700 transition-colors duration-200">
                                     Sign up
                                 </Link>
                             </span>

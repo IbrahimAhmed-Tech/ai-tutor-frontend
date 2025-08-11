@@ -7,8 +7,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        poppins: ["Poppins", "sans-serif"],
-        roboto: ["Roboto", "sans-serif"],
+        poppins: ['Poppins', 'sans-serif'],
+        robotoCondensed: ['"Roboto Condensed"', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.4s ease-in-out',

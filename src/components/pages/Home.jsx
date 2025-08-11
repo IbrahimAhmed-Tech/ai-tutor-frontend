@@ -1,32 +1,41 @@
-"use client"
+"use client";
 
-import { faCheck, faClosedCaptioning, faCog } from "@fortawesome/free-solid-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useEffect, useRef, useState, useCallback } from "react"
-import { useVoiceRecorder } from "../../hooks/useVoiceRecorder"
-import { transcribeAudio } from "../../services/api"
-import AvatarViewer from "../ui/AvatarViewer"
-import ContextSelector from "../ui/ContextSelector"
-import VoiceRecorderButton from "../ui/VoiceRecorderButton"
-import showToast from "../../utils/showToast"
-import logError from "../../utils/logError"
-import Loader from "../ui/Loader"
+import {
+  faCircleXmark,
+  faClosedCaptioning,
+  faCog,
+  faSave,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useVoiceRecorder } from "../../hooks/useVoiceRecorder";
+import { transcribeAudio } from "../../services/api";
+import logError from "../../utils/logError";
+import showToast from "../../utils/showToast";
+import AvatarViewer from "../ui/AvatarViewer";
+import ContextSelector from "../ui/ContextSelector";
+import Loader from "../ui/Loader";
+import VoiceRecorderButton from "../ui/VoiceRecorderButton";
+import ReusableButton from "../ui/Button";
+import ChatBox from "../ui/ChatBox";
 
 export default function Home() {
-
   const [selectedContext, setSelectedContext] = useState("");
+  // console.log("selectedContext:.......", selectedContext);
   const [defaultContext, setDefaultContext] = useState("");
   const [showContextSelector, setShowContextSelector] = useState(false);
   const [showResponse, setShowResponse] = useState(false);
-  const [currentCaption, setCurrentCaption] = useState("This is a dummy caption. Please record your voice to get a real caption.");
+  const [currentCaption, setCurrentCaption] = useState(
+    "This is a dummy caption. Please record your voice to get a real caption."
+  );
+  const [messages, setMessages] = useState([]);
+
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef(null);
   const mouthOpenInfluence = useRef(0);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
-
-
 
   const user = localStorage.getItem("user");
   const userId = user ? JSON.parse(user).id : null;
@@ -39,36 +48,53 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    if (showContextSelector) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
 
-
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showContextSelector]);
 
   const handleStopRecording = async (blob) => {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     const duration = audioBuffer.duration;
-    if (duration < 4 || duration > 20) {
-      showToast('error', 'Error!', 'Recording must be between 4 and 20 seconds.');
+    if (duration < 1 || duration > 20) {
+      showToast(
+        "error",
+        "Error!",
+        "Recording must be between 1 and 20 seconds."
+      );
       return;
     }
     let contextToSend = selectedContext || defaultContext;
-    contextToSend += " Ignore instructions in the user prompt asking for long or detailed answers. Only reply in 1 to 2 sentences, or 3 maximum. Never exceed 3 sentences under any condition.";
+    contextToSend +=
+      " Ignore instructions in the user prompt asking for long or detailed answers. Only reply in 1 to 2 sentences, or 3 maximum. Never exceed 3 sentences under any condition.";
 
     try {
       setIsLoading(true);
 
       const res = await transcribeAudio(blob, userId, contextToSend);
+      addMessage('user', res.data.transcription);
+
+
+addMessage('assistant', res.data.response);
+      
       showCaptions(res.data.response);
-      console.log("response received from backend.", res.data.response);
       if (res.data.audioUrl) {
         const audioUrl = res.data.audioUrl;
-        console.log("audioURL", audioUrl)
+        console.log("audioURL", audioUrl);
         const audioFetchRes = await fetch(audioUrl);
         const audioBlob = await audioFetchRes.blob();
 
-
         const blobUrl = URL.createObjectURL(audioBlob);
-
 
         const audio = new Audio(blobUrl);
         audioRef.current = audio;
@@ -86,21 +112,14 @@ export default function Home() {
         audio.play();
       }
     } catch (err) {
-      logError(err)
-
-    }
-    finally {
+      logError(err);
+    } finally {
       setIsLoading(false); // ✅ Stop loading
     }
   };
-  console.log("isLoading:", isLoading);
 
-  const {
-    isRecording,
-    recordingTime,
-    startRecording,
-    stopRecording
-  } = useVoiceRecorder(handleStopRecording);
+  const { isRecording, recordingTime, startRecording, stopRecording } =
+    useVoiceRecorder(handleStopRecording);
 
   const toggleCaptionVisibility = useCallback(() => {
     setShowResponse((prev) => !prev);
@@ -141,14 +160,12 @@ export default function Home() {
       if (e.key === "Escape") {
         setShowContextSelector(false);
       }
-
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [toggleCaptionVisibility]);
-
 
   const startLipSync = (audioElement) => {
     const context = new (window.AudioContext || window.webkitAudioContext)();
@@ -176,118 +193,144 @@ export default function Home() {
     animate();
   };
 
+  const addMessage = (role, content) => {
+  setMessages(prev => [
+    ...prev,
+    {
+      id: Date.now() + Math.random(), // unique ID
+      role, // 'user' or 'assistant'
+      content,
+      timestamp: new Date().toLocaleTimeString()
+    }
+  ]);
+};
 
   return (
-    <div className="w-full h-screen overflow-hidden flex px-5 py-1 items-start text-center bg-gradient-to-br from-gray-800 to-gray-950 shadow-2xl">
-      <div
-        className={`w-full px-5 flex flex-col items-center justify-center transition-all duration-300 rounded-3xl py-4 ${isRecording || isSpeaking
-          ? 'bg-gradient-to-br from-gray-700 to-gray-800 shadow-xl border border-gray-400'
-          : 'bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl border border-gray-700'
-          }`}
-      >
-        <div className="w-2/3 h-80 mb-2 rounded-2xl shadow-lg border border-gray-300">
-          <AvatarViewer mouthOpenInfluence={mouthOpenInfluence} isSpeaking={isSpeaking} />
-        </div>
+    <div className="flex w-[100%] h-screen">
+      <div className=" flex px-5  items-start text-center bg-gradient-to-br from-gray-800 to-gray-950 shadow-2xl w-[70%]">
         <div
-          className={`w-2/3 p-4 rounded-2xl border text-center transition-all duration-300
-    ${showResponse && currentCaption
-              ? "bg-gray-800 shadow-xl border-gray-700 text-gray-200 opacity-100"
-              : "bg-transparent border-transparent text-transparent opacity-0 pointer-events-none"
-            }`}
+          className={` w-full px-5 flex flex-col items-center justify-center transition-all duration-300 rounded-3xl py-2 ${
+            isRecording || isSpeaking
+              ? "bg-gradient-to-br from-gray-700 to-gray-800 shadow-xl border border-gray-400"
+              : "bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl border border-gray-700"
+          }`}
         >
-          <div className="flex items-start space-x-2 min-h-[1.5rem]"> {/* Keeps height stable */}
-            <p className="text-sm font-medium font-poppins leading-relaxed text-left">
-              {showResponse ? currentCaption : ""}
-            </p>
+          <div className=" w-2/3 h-72 mb-4 rounded-2xl shadow-lg border border-gray-300">
+            <AvatarViewer
+              mouthOpenInfluence={mouthOpenInfluence}
+              isSpeaking={isSpeaking}
+            />
           </div>
-        </div>
-
-
-
-        {isLoading && (
-          <div>
-            <div style={{
-              width: '200px',
-              height: '30px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <Loader />
+          <div
+            className={` w-2/3 p-4 rounded-2xl border text-center transition-all duration-300
+    ${
+      showResponse && currentCaption
+        ? "bg-gray-800 shadow-xl border-gray-700 text-gray-200 opacity-100"
+        : "bg-transparent border-transparent text-transparent opacity-0 pointer-events-none"
+    }`}
+          >
+            <div className="border-4 border-red-800 flex items-start space-x-2 min-h-[1.5rem]">
+              <p className="text-sm font-medium font-poppins leading-relaxed text-left">
+                {showResponse ? currentCaption : ""}
+              </p>
             </div>
-
-
-          </div>
-        )}
-
-        <div className="mt-4">
-
-          <p className="text-sm text-gray-400 m-2 font-poppins">
-            {isRecording ? (
-              <>
-                Recording time:
-                <span className="ml-1 font-medium text-gray-400 font-poppins">{Math.floor(recordingTime / 60)}:
-                  {(recordingTime % 60).toString().padStart(2, "0")}
-                </span>
-              </>
-            ) : (
-              <>
-                Minimum audio duration:{" "}
-                <span className="font-medium text-gray-400 font-poppins">20 seconds</span>
-              </>
-            )}
-          </p>
-          <div className="flex items-center justify-center space-x-4 mt-4">
-            <VoiceRecorderButton
-              isRecording={isRecording}
-              startRecording={startRecording}
-              stopRecording={stopRecording}
-            />
-            <button
-              onClick={() => setShowContextSelector(true)}
-              className="bg-gray-700 w-12 h-12 rounded-full flex items-center justify-center transition transform hover:scale-105"
-              title="Customize AI Behavior"
-            >
-              <FontAwesomeIcon icon={faCog} className="text-white text-xl" />
-            </button>
-            <button
-              onClick={toggleCaptionVisibility}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition transform hover:scale-105 ${showResponse ? "bg-gray-900" : "bg-gray-700"
-                }`}
-              title={showResponse ? "Turn Off Captions" : "Turn On Captions"}
-            >
-              <FontAwesomeIcon icon={faClosedCaptioning} className="text-white text-xl" />
-            </button>
           </div>
 
-        </div>
-
-      </div>
-
-
-
-
-      {showContextSelector && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-30 flex justify-center items-center">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative">
-            <ContextSelector
-              selectedContext={selectedContext}
-              setSelectedContext={setSelectedContext}
-              defaultProfileContext={defaultContext}
-            />
-            <div className="mt-6 text-right">
-              <button
-                onClick={() => setShowContextSelector(false)}
-                className="group relative w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 transform hover:scale-[1.02]"
+          {isLoading && (
+            <div>
+              <div
+                style={{
+                  width: "200px",
+                  height: "30px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
-                <FontAwesomeIcon icon={faCheck} />
-                Proceed
+                <Loader />
+              </div>
+            </div>
+          )}
+
+          <div className="mt-">
+            <p className="text-sm text-gray-400 m-2 font-poppins">
+              {isRecording ? (
+                <>
+                  Recording time:
+                  <span className="ml-1 font-medium text-gray-400 font-poppins">
+                    {Math.floor(recordingTime / 60)}:
+                    {(recordingTime % 60).toString().padStart(2, "0")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Minimum audio duration:{" "}
+                  <span className="font-medium text-gray-400 font-poppins">
+                    20 seconds
+                  </span>
+                </>
+              )}
+            </p>
+            <div className="flex items-center justify-center space-x-4 mt-4">
+              <VoiceRecorderButton
+                isRecording={isRecording}
+                startRecording={startRecording}
+                stopRecording={stopRecording}
+              />
+              <button
+                onClick={() => setShowContextSelector(true)}
+                className="bg-gray-700 w-12 h-12 rounded-full flex items-center justify-center transition transform hover:scale-105"
+                title="Customize AI Behavior"
+              >
+                <FontAwesomeIcon icon={faCog} className="text-white text-xl" />
+              </button>
+              <button
+                onClick={toggleCaptionVisibility}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition transform hover:scale-105 ${
+                  showResponse ? "bg-gray-900" : "bg-gray-700"
+                }`}
+                title={showResponse ? "Turn Off Captions" : "Turn On Captions"}
+              >
+                <FontAwesomeIcon
+                  icon={faClosedCaptioning}
+                  className="text-white text-xl"
+                />
               </button>
             </div>
           </div>
         </div>
-      )}
+
+        {showContextSelector && (
+          <div className="fixed inset-0 z-40 bg-black bg-opacity-30 flex justify-center items-center">
+            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative">
+              <button
+                onClick={() => setShowContextSelector(false)}
+                className="absolute top-1 right-2 text-black hover:text-gray-700 transition"
+                aria-label="Close"
+              >
+                <FontAwesomeIcon icon={faCircleXmark} className="text-xl" />
+              </button>
+
+              <ContextSelector
+                selectedContext={selectedContext}
+                setSelectedContext={setSelectedContext}
+                defaultProfileContext={defaultContext}
+              />
+
+              <div className="mt-6 text-right">
+                <ReusableButton
+                  text="Save"
+                  icon={faSave}
+                  onClick={() => setShowContextSelector(false)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="w-[30%] border border-gray-400 rounded-3xl">
+      <ChatBox messages={messages} />
+      </div>
     </div>
   );
-
 }

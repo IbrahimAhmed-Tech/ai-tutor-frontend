@@ -3,8 +3,10 @@ import Home from '../components/pages/Home'
 
 const HomePage = () => {
   return (
-    <div className='h-screen overflow-hidden pb-3'>
-      <Home/>
+   <div className="min-h-screen w-full bg-gray-50">
+      <main className=" ">
+        <Home /> 
+      </main>
     </div>
   )
 }

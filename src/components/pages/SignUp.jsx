@@ -6,33 +6,47 @@ import { faEye, faEyeSlash, faUserPlus } from "@fortawesome/free-solid-svg-icons
 import { Link } from "react-router-dom";
 import showToast from "../../utils/showToast";
 import logError from "../../utils/logError";
+import ReusableButton from "../ui/Button";
 
 export default function SignUp() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: "",
         email: "",
-        context: "",
         password: "",
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [signingUp, setSigningUp] = useState(false);
+    const [passwordMatchError, setPasswordMatchError] = useState("");
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+
+        // Live password confirmation check
+        if (name === "confirmPassword" || name === "password") {
+            const newPassword = name === "password" ? value : formData.password;
+            const newConfirm = name === "confirmPassword" ? value : formData.confirmPassword;
+
+            if (newConfirm && newPassword !== newConfirm) {
+                setPasswordMatchError("Passwords do not match.");
+            } else {
+                setPasswordMatchError("");
+            }
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSigningUp(true);
         try {
-            await registerUser(formData.name, formData.context, formData.email, formData.password);
+            await registerUser(formData.name, formData.email, formData.password);
             showToast('success', 'Success!', 'Registration successful. Please log in.');
             navigate("/");
         } catch (err) {
             logError(err)
-        
+
         } finally {
             setSigningUp(false);
         }
@@ -70,10 +84,10 @@ export default function SignUp() {
                                     />
                                 </svg>
                             </div>
-                            <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                            <h1 className="text-3xl font-bold font-robotoCondensed mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                                 AI Tutor
                             </h1>
-                            <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                            <p className="text-lg text-gray-300 mb-6 leading-relaxed font-poppins">
                                 Transform your learning experience with personalized AI-powered education
                             </p>
                         </div>
@@ -87,8 +101,8 @@ export default function SignUp() {
                                 <div key={index} className="flex items-center space-x-4 bg-white/5 backdrop-blur-sm rounded-lg p-4">
                                     <div className="w-3 h-3 bg-white rounded-full flex-shrink-0"></div>
                                     <div>
-                                        <h3 className="text-white font-semibold">{feature.title}</h3>
-                                        <p className="text-gray-400 text-sm">{feature.desc}</p>
+                                        <h3 className="text-white font-semibold font-robotoCondensed">{feature.title}</h3>
+                                        <p className="text-gray-400 text-sm font-poppins">{feature.desc}</p>
                                     </div>
                                 </div>
                             ))}
@@ -96,7 +110,7 @@ export default function SignUp() {
                     </div>
                 </div>
 
-                {/* Animated floating elements */}
+
                 <div className="absolute top-20 left-20 w-4 h-4 bg-white/20 rounded-full animate-pulse"></div>
                 <div className="absolute top-40 right-32 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>
                 <div className="absolute bottom-32 left-32 w-3 h-3 bg-white/25 rounded-full animate-bounce"></div>
@@ -106,7 +120,7 @@ export default function SignUp() {
             {/* Right side - Sign In Form */}
             <div className="w-full lg:w-[40%] flex items-center justify-center  px-8">
 
-                <div className="max-w-md w-full space-y-8">
+                <div className="max-w-md w-full space-y-5">
 
                     {/* Logo for mobile */}
                     <div className="lg:hidden text-center">
@@ -123,18 +137,18 @@ export default function SignUp() {
                         <h2 className="text-2xl font-bold text-gray-900">AI Tutor</h2>
                     </div>
 
-                    <div >
-                        <h2 className="text-3xl font-bold text-gray-900 text-center lg:text-left">Create your account</h2>
-                        <p className="mt-2 text-sm text-gray-600 text-center lg:text-left">
+                    <div>
+                        <h2 className="text-3xl font-bold text-gray-900 text-center lg:text-left font-robotoCondensed">Create your account</h2>
+                        <p className="mt-2 text-sm text-gray-600 text-center lg:text-left font-poppins">
                             Join AI Tutor and start your personalized learning journey
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                        <div className="space-y-4">
+                    <form onSubmit={handleSubmit} className="mt-0  space-y-6">
+                        <div className="space-y-3">
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                                  Name
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 font-poppins">
+                                    Name
                                 </label>
                                 <input
                                     type="text"
@@ -146,22 +160,9 @@ export default function SignUp() {
                                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
                                 />
                             </div>
+
                             <div>
-                                <label htmlFor="context" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Context
-                                </label>
-                                <input
-                                    type="text"
-                                    name="context"
-                                    placeholder="Context"
-                                    value={formData.context}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 font-poppins">
                                     Email
                                 </label>
                                 <input
@@ -175,43 +176,79 @@ export default function SignUp() {
                                 />
                             </div>
                             <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                Password
-                            </label>
-                            <div className="relative">
-                               
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    placeholder="Password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
-                                >
-                                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                                </button>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 font-poppins">
+                                    Password
+                                </label>
+                                <div className="relative">
+
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        placeholder="Password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    >
+                                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                    </button>
+                                </div>
                             </div>
+                            <div>
+
+                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1 font-poppins">
+                                    Confirm Password
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        name="confirmPassword"
+                                        placeholder="Confirm Password"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        required
+                                        className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-1 ${passwordMatchError
+                                            ? "border-red-500 focus:ring-red-500"
+                                            : "focus:ring-gray-500"
+                                            }`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    >
+                                        <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                                    </button>
+                                </div>
+                                <div className="h-[22px] flex items-center">
+                                <p
+                                    className={`text-red-500 text-sm mt-1 font-poppins ${passwordMatchError ? "flex" : "hidden"
+                                        }`}
+                                >
+                                    Passwords do not match
+                                </p>
+                                </div>
                             </div>
                         </div>
                         <div>
-                            <button
+
+                            <ReusableButton
                                 type="submit"
-                                className="group relative w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-gray-900 transition-all duration-200 transform hover:scale-[1.02]"
-                            >
-                                <FontAwesomeIcon icon={faUserPlus} />
-                                {signingUp ? "Signing Up..." : "Sign Up"}
-                            </button>
+                                text="Sign Up"
+                                icon={faUserPlus}
+                                loading={signingUp}
+                                onClick={handleSubmit}
+                            />
                         </div>
                         <div className="text-center">
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-gray-600 font-poppins">
                                 {"Already have an account? "}
-                                <Link to="/" className="font-medium text-gray-900 hover:text-gray-700 transition-colors duration-200">
+                                <Link to="/" className="font-medium font-poppins text-gray-900 hover:text-gray-700 transition-colors duration-200">
                                     Sign in
                                 </Link>
                             </span>
